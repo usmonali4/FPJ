@@ -1,0 +1,25 @@
+<%- include('partials/header.ejs') %>
+
+<main>
+    <section class="auth-form">
+        <h2>Register</h2>
+        <form action="/register" method="POST">
+            
+            <label for="email">Email</label>
+            <input type="email" id="email" name="username" required>
+            
+            <label for="password">Password</label>
+            <input type="password" id="password" name="password" required>
+            
+            <button type="submit" class="btn-register">Register</button>
+        </form>
+    </section>
+    <section class="auth-form">
+        <!-- ... Your existing form fields ... -->
+        
+        <!-- Add the "Sign In with Google" button -->
+        <a href="/auth/google" class="btn-google">Sign In with Google</a>
+    </section>
+</main>
+
+<%- include('partials/footer.ejs') %>

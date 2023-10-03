@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="css/styles.css">
+    <title>bbShop</title>
+</head>
+<body>
+    <header>
+        <div class="logo">
+            <a href="/">bbShop</a>
+        </div>
+        <div class="search">
+            <input type="text" placeholder="Search for products">
+            <button type="submit">Search</button>
+        </div>
+        <%if(locals.req_) {%>
+            <% if(req_.isAuthenticated()){ %>
+            <div class="user-actions">
+                <p>Welcome <%= req_.user.username %></p>
+                <a href="/logout">Logout</a>
+            </div>
+            <%} else {%>
+            <div class="user-actions">
+                <a href="/register">Register</a>
+                <a href="/login">Login</a>
+            </div>
+        <% } }%>
+    </header>
