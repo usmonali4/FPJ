@@ -8,7 +8,23 @@ const passport = require("passport");
 const passportLocalMongoose = require("passport-local-mongoose");
 const session = require("express-session");
 const GoogleStrategy = require('passport-google-oauth20').Strategy;
-const findOrCreate = require('mongoose-findorcreate')
+const findOrCreate = require('mongoose-findorcreate');
+const multer  = require('multer');
+const path = require("path");
+
+const storage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    cb(null, 'public/images')
+  },
+  filename: function (req, file, cb) {
+    // const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9)
+    // cb(null, file.fieldname + '-' + uniqueSuffix)
+    console.log(file);
+    cb(null, Date.now() + path.extname(file.originalname));
+  }
+})
+
+const upload = multer({ storage: storage })
 
 const app = express();
 
@@ -33,18 +49,21 @@ mongoose.connect("mongodb://localhost:27017/shopDB");
 const userSchema = new mongoose.Schema({
   username: String,
   password: String,
-  googleId: String
+  googleId: String,
 });
 
 const productSchema = new mongoose.Schema({
   name: String,
   category: String,
   type: String,
+  description: String,
   price: Number,
   views: Number,
   available: Boolean,
-
+  image: String,
 })
+
+const Product = new mongoose.model("Product", productSchema);
 
 userSchema.plugin(passportLocalMongoose);
 userSchema.plugin(findOrCreate);
@@ -82,9 +101,13 @@ function(accessToken, refreshToken, profile, cb) {
 }
 ));
 
+app.get("/in", (req, res) => {
+  res.render("in")
+})
 
-app.get("/", function(req, res) {
-    res.render("home", {req_: req})
+app.get("/", async function(req, res) {
+    const arr = await Product.find({}).exec();
+    res.render("home", {req_: req, products: arr});
 });
 
 app.get("/register", function(req, res){
@@ -96,7 +119,11 @@ app.get("/login", function(req, res){
 });
 
 app.get("/add-product", (req, res) => {
-  res.render("addProduct");
+  if(req.isAuthenticated()){
+    res.render("addProduct", {req_: req});
+  } else {
+    res.redirect("/login");
+  }
 })
 
 app.get("kholat", (req, res) => {
@@ -149,6 +176,20 @@ app.get("/logout", function(req, res){
       if (err) { return next(err); }
       res.redirect('/');
   });
+})
+
+app.post("/add-product", upload.single('image'), (req, res) => {
+  const {name, type, price, description} = req.body;
+  const {fieldname, filename} = req.file;
+  const product = new Product({
+    name,
+    type,
+    price, 
+    description,
+    image: `/images/${filename}`,
+  })
+  product.save();
+  res.redirect("/");
 })
 
 app.listen(3000, function() {
