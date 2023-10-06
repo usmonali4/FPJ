@@ -11,20 +11,24 @@ const GoogleStrategy = require('passport-google-oauth20').Strategy;
 const findOrCreate = require('mongoose-findorcreate');
 const multer  = require('multer');
 const path = require("path");
+const firebase = require("firebase/app");
+const {getStorage, ref, uploadBytes, getDownloadURL} = require("firebase/storage");
 
-const storage = multer.diskStorage({
-  destination: function (req, file, cb) {
-    cb(null, 'public/images')
-  },
-  filename: function (req, file, cb) {
-    // const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9)
-    // cb(null, file.fieldname + '-' + uniqueSuffix)
-    console.log(file);
-    cb(null, Date.now() + path.extname(file.originalname));
-  }
-})
+const firebaseConfig = {
+  apiKey: "AIzaSyBKDY13fVIWCtTsMsjwgv1bL4t9bsh_Tx8",
+  authDomain: "bbshop-400904.firebaseapp.com",
+  projectId: "bbshop-400904",
+  storageBucket: "bbshop-400904.appspot.com",
+  messagingSenderId: "405340450273",
+  appId: "1:405340450273:web:b7d55f60094a18aedcb6a0",
+  //measurementId: "G-D21H3LVKXQ"
+};
 
-const upload = multer({ storage: storage })
+firebase.initializeApp(firebaseConfig);
+
+const storage = getStorage();
+
+const upload = multer({ storage: multer.memoryStorage() })
 
 const app = express();
 
@@ -44,12 +48,14 @@ app.use(session({
 app.use(passport.initialize());
 app.use(passport.session());
 
-mongoose.connect("mongodb://localhost:27017/shopDB");
+mongoose.connect("mongodb+srv://usmon:212020011@cluster0.acowpjh.mongodb.net/shopDB",  {useNewUrlParser: true});
 
 const userSchema = new mongoose.Schema({
   username: String,
+  email: String,
   password: String,
   googleId: String,
+  //products: [productSchema],
 });
 
 const productSchema = new mongoose.Schema({
@@ -95,7 +101,7 @@ passport.use(new GoogleStrategy({
 },
 function(accessToken, refreshToken, profile, cb) {
   console.log(profile);
-  User.findOrCreate({ googleId: profile.id }, function (err, user) {
+  User.findOrCreate({ googleId: profile.id, username: profile.displayName }, function (err, user) {
     return cb(err, user);
   });
 }
@@ -141,7 +147,7 @@ app.get("/auth/google/kholat",
   });
 
 app.post("/register", function(req, res){
-  User.register({username: req.body.username}, req.body.password, function(err, user){
+  User.register({email: req.body.email, username: req.body.username}, req.body.password, function(err, user){
     if(err){
       console.log(err);
       res.redirect("/register");
@@ -178,16 +184,26 @@ app.get("/logout", function(req, res){
   });
 })
 
-app.post("/add-product", upload.single('image'), (req, res) => {
+app.post("/add-product", upload.single('image'), async (req, res) => {
+  
+  const storageRef = ref(storage, `productsPhotos/${Date.now() + "-" +req.file.originalname}`);
+  const metadata = {
+    contentType: req.file.mimetype,
+};
+  const snapshot = await uploadBytes(storageRef, req.file.buffer, metadata);
+  const url = await getDownloadURL(snapshot.ref);
+  
   const {name, type, price, description} = req.body;
-  const {fieldname, filename} = req.file;
+
   const product = new Product({
     name,
     type,
     price, 
     description,
-    image: `/images/${filename}`,
+    image: url,
   })
+  //console.log(req.file);
+  //console.log(product.image);
   product.save();
   res.redirect("/");
 })
