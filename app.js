@@ -31,6 +31,7 @@ const storage = getStorage();
 const upload = multer({ storage: multer.memoryStorage() })
 
 const app = express();
+const PORT = 3000;
 
 app.set('view engine', 'ejs');
 app.set("trust proxy", 1);
@@ -48,7 +49,15 @@ app.use(session({
 app.use(passport.initialize());
 app.use(passport.session());
 
-mongoose.connect("mongodb+srv://usmon:212020011@cluster0.acowpjh.mongodb.net/shopDB",  {useNewUrlParser: true});
+const connectDB = async () => {
+  try {
+    const conn = await mongoose.connect(process.env.MONGO_URI, {useNewUrlParser: true});
+    console.log(`MongoDB Connected: ${conn.connection.host}`);
+  } catch (error) {
+    console.log(error);
+    process.exit(1);
+  }
+}
 
 const userSchema = new mongoose.Schema({
   username: String,
@@ -208,6 +217,8 @@ app.post("/add-product", upload.single('image'), async (req, res) => {
   res.redirect("/");
 })
 
-app.listen(3000, function() {
-  console.log("Server started on port 3000");
-});
+connectDB().then(() => {
+  app.listen(PORT, () => {
+      console.log("listening for requests");
+  })
+})
