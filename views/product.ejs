@@ -13,5 +13,37 @@
             <button class="btn-add-to-cart">Add to Cart</button>
         </div>
     </section>
+    <section>
+        <div class="comment-section">
+            <h2>Comments</h2>
+            <div class="comment-form">
+                <h3>Add a Comment</h3>
+                <form action="/product/<%= product._id %>/add-comment" method="POST">
+                    <div class="form-group">
+                        <label for="username">Your Name</label>
+                        <input type="text" id="username" name="username" class="form-control" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="comment">Your Comment</label>
+                        <textarea id="comment" name="comment" rows="4" class="form-control" required></textarea>
+                    </div>
+                    
+                    <button type="submit" class="btn-add-comment">Submit Comment</button>
+                </form>
+            </div>
+            <% if(product.comments) {%>
+            <% product.comments.forEach(comment => { %>
+                <div class="comment">
+                    <div class="comment-header">
+                        <p class="comment-username"><strong><%= comment.username %></strong></p>
+                        
+                    </div>
+                    <p class="comment-text"><%= comment.comment %></p>
+                </div>
+            <% }) }%>
+            
+        </div>
+    </section>
 </main>
 <%- include('partials/footer.ejs') %>

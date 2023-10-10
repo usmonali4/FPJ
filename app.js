@@ -76,6 +76,7 @@ const productSchema = new mongoose.Schema({
   views: Number,
   available: Boolean,
   image: String,
+  comments: [{username: String, comment: String}],
 })
 
 const Product = new mongoose.model("Product", productSchema);
@@ -141,6 +142,8 @@ app.get("/add-product", (req, res) => {
   }
 })
 
+
+//darkoray baroi redirect google auth
 app.get("kholat", (req, res) => {
   res.render("kholat");
 })
@@ -198,8 +201,23 @@ app.get("/product/:prodId", async (req, res) => {
   const prod = await Product.findById(prodId).exec();
   prod.views++;
   prod.save();
-
   res.render("product", {product: prod});
+})
+
+app.post("/product/:id/add-comment", async (req, res) => {
+  const comment = {
+    username: req.body.username,
+    comment: req.body.comment,
+  };
+  const prodId = req.params.id
+  const prod = await Product.findById(prodId).exec();
+  if(prod.comments){
+   prod.comments.push(comment);
+  } else {
+    prod.comments = [comment];
+  }
+  prod.save();
+  res.redirect(`/product/${prodId}`);
 })
 
 app.post("/add-product", upload.single('image'), async (req, res) => {
@@ -220,6 +238,7 @@ app.post("/add-product", upload.single('image'), async (req, res) => {
     description,
     image: url,
     views: 0,
+   //comments: [],
   })
   //console.log(req.file);
   //console.log(product.image);
