@@ -118,7 +118,7 @@ function(accessToken, refreshToken, profile, cb) {
 
 app.get("/in", (req, res) => {
   res.render("in")
-})
+});
 
 app.get("/", async function(req, res) {
     const arr = await Product.find({}).exec();
@@ -191,6 +191,15 @@ app.get("/logout", function(req, res){
       if (err) { return next(err); }
       res.redirect('/');
   });
+});
+
+app.get("/product/:prodId", async (req, res) => {
+  const prodId = req.params.prodId;
+  const prod = await Product.findById(prodId).exec();
+  prod.views++;
+  prod.save();
+
+  res.render("product", {product: prod});
 })
 
 app.post("/add-product", upload.single('image'), async (req, res) => {
@@ -210,6 +219,7 @@ app.post("/add-product", upload.single('image'), async (req, res) => {
     price, 
     description,
     image: url,
+    views: 0,
   })
   //console.log(req.file);
   //console.log(product.image);
