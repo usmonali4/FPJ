@@ -10,9 +10,9 @@
       <div class="product-row">
         <%products.forEach((product) => {%>
           <div class="product">
-              <img src= "<%= product.image%>" alt="Product 1" width="100">
+              <img src= "<%= product.image[0]%>" alt="Product 1" width="100">
               <h3><%= product.type %> <%= product.name %></h3>
-              <p><%= product.description %></p>
+              <p class="fifty-chars"><%= product.description %></p>
               <span class="price">$<%= product.price %></span>
               <button class="btn-add-to-cart">Add to Cart</button>
               <a class="btn-view-details" href="product/<%= product._id %>">View Details</a>

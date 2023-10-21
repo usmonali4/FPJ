@@ -2,7 +2,15 @@
 <main>
     <section class="product-details">
         <div class="product-image">
-            <img src="<%= product.image %>" alt="<%= product.name %>">
+            <div class="slideshow">
+                <div class="slideshow-image" id="image-display">
+                    <img src="<%= product.image[0] %>" alt="<%= product.name %>">
+                </div>
+                <div class="slideshow-buttons">
+                    <button id="prev-image" class="btn-slideshow" onclick="changeImage(-1)">&#10094;</button>
+                    <button id="next-image" class="btn-slideshow" onclick="changeImage(1)">&#10095;</button>
+                </div>
+            </div>
         </div>
         <div class="product-info">
             <h1><%= product.name %></h1>
@@ -36,7 +44,7 @@
             <% product.comments.forEach(comment => { %>
                 <div class="comment">
                     <div class="comment-header">
-                        <p class="comment-username"><strong><%= comment.username %></strong></p>
+                        <p class="comment-username"><strong><%= comment.username %> <%= comment.date %> </strong></p>
                         
                     </div>
                     <p class="comment-text"><%= comment.comment %></p>
@@ -47,3 +55,24 @@
     </section>
 </main>
 <%- include('partials/footer.ejs') %>
+
+<script>
+    // JavaScript for handling the image slideshow
+    let currentImageIndex = 0;
+    const images = <%- JSON.stringify(product.image) %>;
+    const imageDisplay = document.getElementById("image-display");
+
+    function changeImage(offset) {
+        currentImageIndex += offset;
+
+        // Ensure the index wraps around the images array
+        if (currentImageIndex < 0) {
+            currentImageIndex = images.length - 1;
+        } else if (currentImageIndex >= images.length) {
+            currentImageIndex = 0;
+        }
+
+        // Update the displayed image
+        imageDisplay.innerHTML = `<img src="${images[currentImageIndex]}" alt="<%= product.name %>">`;
+    }
+</script>

@@ -59,13 +59,6 @@ const connectDB = async () => {
   }
 }
 
-const userSchema = new mongoose.Schema({
-  username: String,
-  email: String,
-  password: String,
-  googleId: String,
-  //products: [productSchema],
-});
 
 const productSchema = new mongoose.Schema({
   name: String,
@@ -75,9 +68,17 @@ const productSchema = new mongoose.Schema({
   price: Number,
   views: Number,
   available: Boolean,
-  image: String,
-  comments: [{username: String, comment: String}],
+  image: [String],
+  comments: [{username: String, comment: String, date: Date}]
 })
+
+const userSchema = new mongoose.Schema({
+  username: String,
+  email: String,
+  password: String,
+  googleId: String,
+  products: [productSchema],
+});
 
 const Product = new mongoose.model("Product", productSchema);
 
@@ -208,6 +209,7 @@ app.post("/product/:id/add-comment", async (req, res) => {
   const comment = {
     username: req.body.username,
     comment: req.body.comment,
+    //date: new Date(),
   };
   const prodId = req.params.id
   const prod = await Product.findById(prodId).exec();
@@ -220,14 +222,19 @@ app.post("/product/:id/add-comment", async (req, res) => {
   res.redirect(`/product/${prodId}`);
 })
 
-app.post("/add-product", upload.single('image'), async (req, res) => {
+app.post("/add-product", upload.array('image'), async (req, res) => {
+
+  const arrayURLs = [];
   
-  const storageRef = ref(storage, `productsPhotos/${Date.now() + "-" +req.file.originalname}`);
-  const metadata = {
-    contentType: req.file.mimetype,
-};
-  const snapshot = await uploadBytes(storageRef, req.file.buffer, metadata);
-  const url = await getDownloadURL(snapshot.ref);
+  for(const file of req.files){
+    const storageRef = ref(storage, `productsPhotos/${Date.now() + "-" +file.originalname}`);
+    const metadata = {
+      contentType: file.mimetype,
+    };
+    const snapshot = await uploadBytes(storageRef, file.buffer, metadata);
+    const url = await getDownloadURL(snapshot.ref);
+    arrayURLs.push(url);
+}
   
   const {name, type, price, description} = req.body;
 
@@ -236,10 +243,15 @@ app.post("/add-product", upload.single('image'), async (req, res) => {
     type,
     price, 
     description,
-    image: url,
+    image: arrayURLs,
     views: 0,
    //comments: [],
   })
+  const user = await User.findById(req.user.id).exec();
+  if(user.products === undefined)
+    user.products = [];
+  user.products.push(product);
+  user.save();
   //console.log(req.file);
   //console.log(product.image);
   product.save();
