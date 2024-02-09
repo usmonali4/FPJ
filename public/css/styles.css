@@ -23,6 +23,7 @@ header {
   color: #fff;
   font-size: 24px;
   font-weight: bold;
+  margin-left: 10px
 }
 
 .search {
@@ -49,7 +50,8 @@ header {
 .user-actions a {
   text-decoration: none;
   color: #fff;
-  margin-left: 20px;
+  margin-left: 10px;
+  margin-right: 10px;
 }
 
 .main {
@@ -438,4 +440,34 @@ footer {
 
 .btn-slideshow:hover {
   background-color: #0056b3;
+}
+
+.product-gallery{
+  width:350px;
+}
+.image-viewer{
+  width:100%;
+  height:300px;
+  padding:20px;
+  box-sizing:border-box;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+}
+.image-viewer img{
+  max-width:100%;
+}
+.image-thumb{
+  width:100%;
+  display:flex;
+}
+.image-thumb img{
+  height:60px;
+  border:1px solid grey;
+  padding:5px;
+  opacity:0.6;
+}
+.active{
+  opacity:1!important;
+  border:1px solid red!important;
 }
