@@ -12,18 +12,29 @@
             <a href="/">xazina</a>
         </div>
         <div class="search">
-            <input type="text" placeholder="Search for products">
-            <button type="submit">Search</button>
+            <form action="/search" method="POST">
+                    <input type="text" name="text" placeholder="Search for products" onkeyup="keyUphandle">
+                <button type="submit">Search</button>
+            </form>
         </div>
+        <div class="user-actions">
+            <a href="/add-product" class="btn-add-product">Add a Product</a>
         <%if(locals.req_) {%>
             <% if(req_.isAuthenticated()){ %>
-            <div class="user-actions">
-                <p>Welcome <%= req_.user.username %> <a href="/logout">Logout</a> </p>
-            </div>
+                <p>Welcome <%= req_.user.username %></p>
+                <a href="/logout">Logout</a> 
             <%} else {%>
-            <div class="user-actions">
                 <a href="/register">Register</a>
                 <a href="/login">Login</a>
-            </div>
         <% } }%>
+        </div>
     </header>
+
+    <script>
+        keyUphandle = (e) => {
+            const button = document.querySelector(".search").querySelector('button');
+            if(e.keyCode === 13){
+                button.click();
+            }
+        }
+    </script>

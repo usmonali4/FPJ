@@ -58,7 +58,7 @@
 <%- include('partials/footer.ejs') %>
 
 <script>
-    function updateImage(ele){
+    updateImage= (ele) => {
         document.querySelector('#image-display').querySelector("img").src = ele.src;
         const imageT = document.querySelector(".image-thumb")
         for(const child of imageT.children){

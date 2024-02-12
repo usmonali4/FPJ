@@ -40,7 +40,7 @@ app.use(bodyParser.urlencoded({extended: true}));
 app.use(express.static("public"));
 
 app.use(session({
-  secret: "This is some secret",
+  secret: process.env.SOME_SECRET,
   resave: false,
   saveUninitialized: false,
   //cookie: {secure: true},
@@ -52,7 +52,8 @@ app.use(passport.session());
 const connectDB = async () => {
   try {
     const conn = await mongoose.connect(process.env.MONGO_URI, {useNewUrlParser: true});
-    console.log(`MongoDB Connected: ${conn.connection.host}`);
+    //console.log(`MongoDB Connected: ${conn.connection.host}`);
+    console.log("MongoDB Connected")
   } catch (error) {
     console.log(error);
     process.exit(1);
@@ -111,7 +112,6 @@ passport.use(new GoogleStrategy({
   callbackURL: "http://localhost:3000/auth/google/kholat",
 },
 function(accessToken, refreshToken, profile, cb) {
-  console.log(profile);
   User.findOrCreate({ googleId: profile.id, username: profile.displayName }, function (err, user) {
     return cb(err, user);
   });
@@ -172,22 +172,32 @@ app.post("/register", function(req, res){
   })
 })
 
-app.post("/login", function(req, res){
+app.post("/login", (req, res, next) => {
   const user = new User({
     username: req.body.username,
     password: req.body.password,
   })
 
-  req.login(user, async function(err){
-    if(err){
-      console.log(err);
-      res.redirect("/login");
-    } else {
-      passport.authenticate("local")(req, res, function(){
-        res.redirect("/");
-      })
+  passport.authenticate("local", (err, user, failureDetails) => {
+    if (err) {
+      return next(err);
     }
-  })
+  
+    if (!user) {
+      // Unauthorized
+      res.redirect('/login'); 
+      return;
+    }
+
+    req.login(user, (err) => {
+      if (err) {
+        // Session save went bad
+        return next(err);
+      }
+
+      res.redirect('/')
+    });
+  })(req, res, next);
 })
 
 app.get("/logout", function(req, res){
@@ -202,7 +212,7 @@ app.get("/product/:prodId", async (req, res) => {
   const prod = await Product.findById(prodId).exec();
   prod.views++;
   prod.save();
-  res.render("product", {product: prod});
+  res.render("product", {req_: req, product: prod});
 })
 
 app.post("/product/:id/add-comment", async (req, res) => {
@@ -220,6 +230,21 @@ app.post("/product/:id/add-comment", async (req, res) => {
   }
   prod.save();
   res.redirect(`/product/${prodId}`);
+})
+
+app.post('/search', (req, res) => {
+  const text = req.body.text
+  res.redirect(`/search?q=${text}`)
+})
+
+app.get('/search?:text', async (req, res) => {
+  const arr = await Product.find({}).exec();
+  const text = req.query.q
+  const searchRes = arr.filter((prod) => 
+    prod.name.toLowerCase().includes(text) || prod.type.toLowerCase().includes(text) || 
+    prod.description.toLowerCase().includes(text)
+  );
+  res.render("home", {req_: req, products: searchRes});
 })
 
 app.post("/add-product", upload.array('image'), async (req, res) => {

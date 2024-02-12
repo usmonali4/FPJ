@@ -47,6 +47,11 @@ header {
   cursor: pointer;
 }
 
+.user-actions {
+  display: flex;
+  align-items: center;
+}
+
 .user-actions a {
   text-decoration: none;
   color: #fff;
@@ -191,7 +196,7 @@ footer {
 .auth-form input[type="text"],
 .auth-form input[type="email"],
 .auth-form input[type="password"] {
-  width: 100%;
+  width: 380px;
   padding: 10px;
   margin-bottom: 20px;
   border: 1px solid #ccc;
@@ -234,8 +239,7 @@ footer {
   color: #fff;
   text-decoration: none;
   border-radius: 5px;
-  padding: 10px 20px;
-  margin-top: 20px;
+  padding: 5px 10px;
   display: inline-block;
   cursor: pointer;
   transition: background-color 0.3s;
@@ -248,15 +252,14 @@ footer {
 .add-product form {
   display: flex;
   flex-direction: column;
-  align-items: flex-start;
+  align-items: center;
 }
 
 .add-product label {
   margin-bottom: 10px;
 }
 
-.add-product input[type="text"],
-.add-product input[type="number"],
+.add-product input,
 .add-product textarea {
   width: 20%;
   padding: 10px;
@@ -418,7 +421,7 @@ footer {
 
 .slideshow-image img {
   max-width: 100%;
-  height: auto;
+  height: 450px;
   border-radius: 5px;
   box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
 }
